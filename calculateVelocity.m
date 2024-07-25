@@ -22,7 +22,7 @@ function [newVelocity] = calculateVelocity...
 
     % Generate two random numbers
     r1 = rand(1);
-    r2 = 10 * rand(1);
+    r2 =10 * rand(1);
 
     % Calculate the cognitive part
     cognitiveVelocity = c1 * r1 .* (pBest - currentX);
