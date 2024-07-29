@@ -18,8 +18,9 @@ wMin = 0.001; % The minimum inertia weight
 c1 = 1.49445; % The cognitive coefficient
 c2 = 1.49445; % The social coefficient
 %       P2(%) P3 P4 P5 P6 Q1(%) Q2 Q3 Q4 Q5 Q6 V1   V2,  V3,  V4   V5   V6
-xMax = [1,    1, 1, 1, 1, 1,    1, 1, 1, 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1];
-xMin = [0.25,    0.25, 0.25, 0.25, 0.25, -0.13,-0.33,-0.24,-0.308,-0.25,-0.33, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9];
+%       r1 r2 r3 r4 r5 r6
+xMax = [1,    1, 1, 1, 1, 1,    1, 1, 1, 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1,  1.05, 1.05, 1.05, 1.05, 1.05, 1.05];
+xMin = [0.25,    0.25, 0.25, 0.25, 0.25, -0.13,-0.33,-0.24,-0.308,-0.25,-0.33, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,  0.95, 0.95, 0.95, 0.95, 0.95, 0.95];
 vMax = 0.05 * (xMax - xMin); % The maximum velocity
 vMin = -vMax; % The minimum velocity         
 %   ***相应的rand、x、v也要改成 n * 1 的矩阵***
@@ -81,7 +82,7 @@ for t = 1 : maxIter
         Swarm.Particles(k).X = max(Swarm.Particles(k).X, xMin);
 
         % Calculate the fitness value of the particle    *************************
-        Swarm.Particles(k).O = fun(Swarm.Particles(k).X);
+        Swarm.Particles(k).O = fun(Swarm.Particles(k).X); 
         % Update the personal best of the particle if the current fitness value is better than the personal best
         if Swarm.Particles(k).O < Swarm.Particles(k).PBEST.O
             Swarm.Particles(k).PBEST.X = Swarm.Particles(k).X;
@@ -96,7 +97,7 @@ for t = 1 : maxIter
     end
     % Add the global best value of this iteration to the array
     globalBest(t) = Swarm.GBEST.O;
-    if Swarm.Particles(k).O == 0
+    if Swarm.Particles(k).O == 0 
         break;
     end
 end
@@ -105,6 +106,7 @@ data = case30;
 data.gen(2:6, 2) = Swarm.GBEST.X(1:5) .* (data.gen(2:6, 2))'; % 发电机有功功率
 data.gen(:, 3) = Swarm.GBEST.X(6:11) .* (data.gen(:, 3))';  % 发电机无功功率
 data.gen(:, 6) = Swarm.GBEST.X(12:17); % 发电机电压幅值
+data.branch(1:6, 9) = Swarm.GBEST.X(18:23); %变压器分接头位置
 res = runpf(data);
 % 计算发电成本
 Cost = 0;
