@@ -37,11 +37,11 @@ Stability = 0; % the sum of the voltage deviation
 for i = 1 : size(V, 1)
     Stability = Stability + (V(i) - 1) ^ 2;
     if V(i) < 0.98 || V(i) > 1.02
-        penalty = penalty + 1000;
+        penalty = penalty + V(i)*0.3;
     end
 end 
 
-y = Cost;
+y = Cost + penalty;
 %y = Cost / 50 + Ploss + Stability;
 %y = Cost / 100 + penalty;%+ Ploss;
 %y = Stability * 1000 + Cost + penalty;

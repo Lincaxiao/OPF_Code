@@ -7,7 +7,7 @@ clc % Clear the command window
 
 %%% This algorithm can find the maximum of a function accepting 2 variables %%%
 % Define the related parameters
-numberofParticles = 500; % The number of particles
+numberofParticles = 1000; % The number of particles
 maxIter = 50; % The maximum number of iterations
 
 % The inertia weight would decrease linearly from wMax to wMin
