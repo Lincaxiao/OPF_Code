@@ -1,4 +1,4 @@
-data = case30;
+data = case_ieee30;
 res = runpf(data);
 Ploss = sum(res.branch(:, 14) + res.branch(:, 16));
 Cost = sum(data.gencost(:, 5) .* data.gen(:, 2) .^ 2 + data.gencost(:, 6) .* data.gen(:, 2));

@@ -44,7 +44,7 @@ function [Best_score, Best_pos, HO_curve] = HO(SearchAgents, Max_iterations, low
             RandGroup = randperm(SearchAgents, RandGroupNumber);
     
             % 计算随机小组的均值位置
-            MeanGroup = mean(X(RandGroup, :)) .* (length(RandGroup) ~= 1) + X(RandGroup(1, 1), :) * (length(RandGroup) == 1);
+            MeanGroup = mean(X(RandGroup, :)) .* (length(RandGroup) ~= 1) + X(RandGroup(1, 1), :) * (isscalar(RandGroup));
             % 生成用于位置更新的随机因子
             Alfa{1,:} = (I2 * rand(1, dimension) + (~Ip1(1)));
             Alfa{2,:} = 2 * rand(1, dimension) - 1;

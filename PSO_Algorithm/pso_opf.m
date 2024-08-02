@@ -7,8 +7,8 @@ clc % Clear the command window
 
 %%% This algorithm can find the maximum of a function accepting 2 variables %%%
 % Define the related parameters
-numberofParticles = 1000; % The number of particles
-maxIter = 50; % The maximum number of iterations
+numberofParticles = 30; % The number of particles
+maxIter = 100; % The maximum number of iterations
 
 % The inertia weight would decrease linearly from wMax to wMin
 % To fit the reality that the Swarm would converge to the global best fitness value gradually
@@ -18,8 +18,12 @@ wMin = 0.001; % The minimum inertia weight
 c1 = 1.49445; % The cognitive coefficient
 c2 = 1.49445; % The social coefficient
 %       P2(%) P3 P4 P5 P6 Q1(%) Q2 Q3 Q4 Q5 Q6 V1   V2,  V3,  V4   V5   V6    r1    r2    r3    r4    r5    r6
-xMax = [1,    1, 1, 1, 1, 1,    1, 1, 1, 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1,  1.05, 1.05, 1.05, 1.05, 1.05, 1.05];
-xMin = [0.25, 0.25, 0.25, 0.25, 0.25, -0.13,-0.33,-0.24,-0.308,-0.25,-0.33, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95];
+%xMax = [1,    1, 1, 1, 1, 1,    1, 1, 1, 1, 1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1,  1.05, 1.05, 1.05, 1.05, 1.05, 1.05];
+%xMin = [0.25, 0.25, 0.25, 0.25, 0.25, -0.13,-0.33,-0.24,-0.308,-0.25,-0.33, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95];
+xMax = [1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10...
+    2,    7.5,  2.5,  5.8,  0.7,  11.2, 1.6,  6.7,  0.9, 360.2, 140, 100, 100, 100, 100];
+xMin = [0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.90, 0.90, 0.90, 0.90...
+    0,    0,    0,    0,    0,    0,    0,    0,    0, 0, 0, 0, 0, 0, 0];
 vMax = 0.05 * (xMax - xMin); % The maximum velocity
 vMin = -vMax; % The minimum velocity         
 %   ***相应的rand、x、v也要改成 n * 1 的矩阵***
@@ -99,18 +103,29 @@ for t = 1 : maxIter
     if Swarm.Particles(k).O == 0
         break;
     end
+    disp(['The global best fitness value is ', num2str(Swarm.GBEST.O)]);
 end
 % 对最终的最优解进行runpf
-data = case30;
-data.gen(2:6, 2) = Swarm.GBEST.X(1:5) .* (data.gen(2:6, 2))'; % 发电机有功功率
-data.gen(:, 3) = Swarm.GBEST.X(6:11) .* (data.gen(:, 3))';  % 发电机无功功率
-data.gen(:, 6) = Swarm.GBEST.X(12:17); % 发电机电压幅值
+%data = case30;
+%data.gen(2:6, 2) = Swarm.GBEST.X(1:5) .* (data.gen(2:6, 2))'; % 发电机有功功率
+%data.gen(:, 3) = Swarm.GBEST.X(6:11) .* (data.gen(:, 3))';  % 发电机无功功率
+%data.gen(:, 6) = Swarm.GBEST.X(12:17); % 发电机电压幅值
+data = case_ieee30;
+data.gen(:, 6) = Swarm.GBEST.X(1 : 6); % 发电机电压幅值
+data.branch(11, 9) = Swarm.GBEST.X(7); % 变压器分接头位置
+data.branch(12, 9) = Swarm.GBEST.X(8);
+data.branch(15, 9) = Swarm.GBEST.X(9);
+data.branch(36, 9) = Swarm.GBEST.X(10);
+%data.gen(2:6, 2) = Swarm.GBEST.X(21:25); % 发电机有功功率
 res = runpf(data);
 % 计算发电成本
 Cost = 0;
 for i = 1 : 6
     Cost = Cost + res.gencost(i, 5) * res.gen(i, 2) ^ 2 + res.gencost(i, 6) * res.gen(i, 2);
 end
+% 计算网损
+Ploss = sum(res.branch(:, 14) + res.branch(:, 16));
+disp(['The final Ploss is ', num2str(Ploss)]);
 disp(['The final cost is ', num2str(Cost)]);
 
 % Display the global best fitness value and the global best position
