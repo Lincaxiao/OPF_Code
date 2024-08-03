@@ -1,6 +1,6 @@
-Max_loop_number = 500;
-Max_iterations = 200;
-Search_agents = 1500;
+Max_loop_number = 150;
+Max_iterations = 500;
+Search_agents = 20;
 Fun_name = 'Fun_ieee30';
 
 Global_Best_Score = inf;
@@ -24,4 +24,35 @@ for i = 1:Max_loop_number
         Global_res = temp(i).res;
     end
 end
+Global_Best_Score_now = Global_Best_Score; 
+Global_Best_pos_now = Global_Best_pos;
+Global_HO_curve_now = Global_HO_curve;
+Global_res_now = Global_res;
+load('results.mat');
+if Global_Best_Score_now < Global_Best_Score
+    Global_Best_Score = Global_Best_Score_now;
+    Global_Best_pos = Global_Best_pos_now;
+    Global_HO_curve = Global_HO_curve_now;
+    Global_res = Global_res_now;
+end
 save('results.mat', 'Global_Best_Score', 'Global_Best_pos', 'Global_HO_curve', 'Global_res');
+data = case_ieee30;
+data.gen(:, 6) = Global_Best_pos(1 : 6);
+data.branch(11, 9) = Global_Best_pos(7);
+data.branch(12, 9) = Global_Best_pos(8);
+data.branch(15, 9) = Global_Best_pos(9);
+data.branch(36, 9) = Global_Best_pos(10);
+data.gen(2:6, 2) = Global_Best_pos(21:25);
+data.bus(10, 6) = Global_Best_pos(11);
+data.bus(12, 6) = Global_Best_pos(12);
+data.bus(15, 6) = Global_Best_pos(13);
+data.bus(17, 6) = Global_Best_pos(14);
+data.bus(20, 6) = Global_Best_pos(15);
+data.bus(21, 6) = Global_Best_pos(16);
+data.bus(23, 6) = Global_Best_pos(17);
+data.bus(24, 6) = Global_Best_pos(18);
+data.bus(29, 6) = Global_Best_pos(19);
+res = runpf(data);
+disp(Global_res.gen(:, 2)');
+disp(['The final ploss is ', num2str(Global_Best_Score)]);
+disp(['The global best pos is ', num2str(Global_Best_pos)]);
