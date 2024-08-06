@@ -144,7 +144,7 @@ function y = Fun_ieee30(x)
             penalty = penalty + (Vmin - V(i)) * 100;
         end
     end
-    y = Cost + penalty;
+    y = Ploss + penalty;
 end
 
 function y = Fun_case118(x)
@@ -227,7 +227,7 @@ function y = Fun_case118(x)
             penalty = penalty + (Vmin - V(i)) * 100 + 5000000;
         end
     end
-    y = Ploss + penalty;
+    y = Cost + penalty;
 end
 
 

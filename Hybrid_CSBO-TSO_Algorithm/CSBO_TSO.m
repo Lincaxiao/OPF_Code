@@ -1,20 +1,13 @@
-
-%%%%%  Circulatory System Based Optimization (CSBO): an expert multilevel biologically
-%%%%%                             inspired meta-heuristic algorithm
-%%%%%                 ENGINEERING APPLICATIONS OF COMPUTATIONAL FLUID MECHANICS
-%%%%%                       https://doi.org/10.1080/19942060.2022.2098826
-
 clc;
 clear;
 
+fitness = @(x) fit_ieee30(x);
 
-%% Problem Definition
+nVar = 25; % Number of Decision Variables
+a = 0.7; % a1 代表了个体向最优个体靠近的程度
+z = 0.05; % Probability of random resetting
 
-fitness=@(x) fit_ieee30(x);
-
-nVar=25;                 % Number of Decision Variables
-
-VarSize=[1 nVar];       % Decision Variables Matrix Size
+VarSize = [1, nVar]; % Decision Variables Matrix Size
 
 VarMax = [100, 100, 100, 100, 550, 185, 100, 100, 100, 100, ...
     320, 414, 100, 107, 100, 100, 100, 100, 100, 119, ...
@@ -46,57 +39,34 @@ VarMax = [1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10...
         5,    5,  5,  5,  5,  5, 5,  5,  5, 200, 80, 50, 35, 30, 40];
 VarMin = [0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.90, 0.90, 0.90, 0.90...
         0,    0,    0,    0,    0,    0,    0,    0,    0, 50, 20, 15, 10, 10, 12];
-
-
-
-%% CSBO Parameters
-
-MaxIt = 120000;    % Maximum Number of Iterations
-
-nPop = 300;         % Population Size
-
-NR=nPop/3;         % NR 是种群中的肺循环个体数目
-%% Initialization
-
+MaxIt = 120000; % 最大迭代次数
+nPop = 300; % 种群大小
+NR = nPop / 3; % NR 是种群中的肺循环个体数目
 
 empty_plant.Position = [];
 empty_plant.Cost = [];
 
-pop = repmat(empty_plant, nPop, 1);    % Initial Population Array
-% Initialize Best Solution Ever Found
-BestSol.Cost=inf;
+pop = repmat(empty_plant, nPop, 1); % 初始化种群数组
+BestSol.Cost = inf;
 
 for i = 1:numel(pop)
-    
-    % Initialize Position
     pop(i).Position = unifrnd(VarMin, VarMax, VarSize);
-    
-    % Evaluation
     pop(i).Cost = fitness(pop(i).Position);
-    
     sigma1(i,:) =rand(VarSize);
-    if pop(i).Cost<=BestSol.Cost
-        BestSol.Position=pop(i).Position;
-        BestSol.Cost=pop(i).Cost;
+    if pop(i).Cost < BestSol.Cost
+        BestSol = pop(i);
     end
-    BestCost1(i)=BestSol.Cost;
+    BestCost1(i) = BestSol.Cost;
 end
 
+it = nPop;
 
-
-%% CSBO Main Loop
-
-it=nPop;
-% % for it=1:MaxIt
-while it<=MaxIt
-    
-    
-    % Get Best and Worst Cost Values
+while it <= MaxIt
     Costs = [pop.Cost];
     BestCost = min(Costs);
     WorstCost = max(Costs);
-    
-    
+    t_factor = (1 - it / MaxIt) ^ (it / MaxIt);
+
     for i = 1:numel(pop) % numel 表示数组中元素的个数
         %%%
         %% 对于每一个个体，随机选取若干个个体，向更好的个体靠近，向不好的个体远离 %%
@@ -134,6 +104,7 @@ while it<=MaxIt
         
         % Evaluate
         newsol.Cost = fitness(newsol.Position);
+        save("CSBO_TSO_result.mat", "BestCost1")
         % 
         if newsol.Cost<pop(i).Cost
             pop(i)=newsol;
@@ -145,60 +116,11 @@ while it<=MaxIt
         it=it+1;
         BestCost1(it)=BestSol.Cost; % BestCost1 记录每一代的最优解
     end
-    
-    
+
     % 将种群按照适应度从小到大排序
     [~, SortOrder]=sort([pop.Cost]);
-     pop = pop(SortOrder);
-    
-    %Population or blood mass flow in 系统循环
-    i=0;
-    newpop1 = [];
-    for i = 1:(numel(pop)-NR)   % NR 是种群中的肺循环个体数目，即这部分个体不参与系统循环
-        Pos1(1,:) = 0*unifrnd(VarMin, VarMax, VarSize);
-        Costs = [pop.Cost];
-        BestCost = min(Costs);
-        WorstCost = max(Costs);
-        ratioi= (pop(i).Cost - WorstCost)/(BestCost - WorstCost);
-        newsol = empty_plant;  % empty_plant 是一个空结构体，用于存储新的个体
-        
-        A=randperm(nPop); % randperm 生成随机排列
-        A(A==i)=[];
-        a1=A(1);
-        a2=A(2);
-        a3=A(3);
-        sigma1(i,:)=ratioi; % sigma1 是一个矩阵，用于存储每个个体每一列的适应度比例
-        newsol.Position =pop(a1).Position+(sigma1(i)).*(pop(a3).Position-pop(a2).Position); % 实际上a3, a2 就是随机选取的两个个体 (扰动)
-        see=pop(i).Position; % see 是当前个体的位置
-        
-        for j =1:nVar 
-            if rand>0.9 % 以0.1的概率进行扰动
-                Pos1(1,j) =newsol.Position(1,j);
-            else
-                Pos1(1,j)= see(1,j); % 否则保持不变
-            end
-        end
-        newsol.Position =Pos1; % 更新位置
-        % 边界处理
-        newsol.Position = max(newsol.Position, VarMin);
-        newsol.Position = min(newsol.Position, VarMax);
-        
-        
-        % Evaluate
-        newsol.Cost = fitness(newsol.Position);
-        if newsol.Cost<pop(i).Cost
-            pop(i)=newsol;
-            if pop(i).Cost<=BestSol.Cost
-                BestSol=pop(i);
-            end
-        end
-        it=it+1;
-        BestCost1(it)=BestSol.Cost;
-    end
-    % Population or blood mass flow in 肺循环
-    newpop = [];
-    i=0;
-    
+    pop = pop(SortOrder);
+
     for i = ((numel(pop)-NR)+1):numel(pop) % 遍历种群的后小半部分，即肺循环部分
         newsol = empty_plant; % 初始化新的个体
         
@@ -222,18 +144,70 @@ while it<=MaxIt
         
         sigma1(i,:)=rand(VarSize);
     end
-    
-    
-    
-    
-    % Display Iteration Information
-    disp(['Iteration ' num2str(it) ': Best Cost = ' num2str(BestCost1(it))]);
-    
+
+    for i = 1:(numel(pop)-NR)
+        C = it / MaxIt;
+        a1 = a + (1 - a) * C; % a1 代表了个体向最优个体靠近的程度
+        a2 = (1 - a) * (1 - C);
+        if rand > 0.5
+            r1 = rand;
+            Beta = exp(r1 * exp(3 * cos(pi * (MaxIt - it + 1) / MaxIt))) * cos(2 * pi * r1);
+            if it/MaxIt > rand
+                New_Position = a1 * (BestSol.Position + Beta * abs(BestSol.Position - pop(i).Position)) + a2 * pop(i).Position;
+                if fitness(New_Position) < pop(i).Cost
+                    pop(i).Position = New_Position;
+                    pop(i).Cost = fitness(New_Position);
+                    if pop(i).Cost < BestSol.Cost
+                        BestSol = pop(i);
+                    end
+                end
+            else
+                IndivRand = unifrnd(VarMin, VarMax, VarSize);
+                New_Position = a1 * (IndivRand + Beta * abs(IndivRand - pop(i).Position)) + a2 * pop(i).Position;
+                if fitness(New_Position) < pop(i).Cost
+                    pop(i).Position = New_Position;
+                    pop(i).Cost = fitness(New_Position);
+                    if pop(i).Cost < BestSol.Cost
+                        BestSol = pop(i);
+                    end
+                end
+            end
+        else
+            TF = (rand > 0.5) * 2 - 1;
+            if rand < 0.5
+                New_Position = BestSol.Position + rand(1, nVar) .* (BestSol.Position - pop(i).Position) + TF * t_factor^2 .* (BestSol.Position - pop(i).Position);
+                if fitness(New_Position) < pop(i).Cost
+                    pop(i).Position = New_Position;
+                    pop(i).Cost = fitness(New_Position);
+                    if pop(i).Cost < BestSol.Cost
+                        BestSol = pop(i);
+                    end
+                end
+            else
+                New_Position = TF * t_factor^2 .* pop(i).Position;
+                if fitness(New_Position) < pop(i).Cost
+                    pop(i).Position = New_Position;
+                    pop(i).Cost = fitness(New_Position);
+                    if pop(i).Cost < BestSol.Cost
+                        BestSol = pop(i);
+                    end
+                end
+            end
+        end
+        it = it + 1;            
+    end
+
+    disp(['Iteration ' num2str(it) ': Best Cost = ' num2str(BestSol.Cost)]);
 end
-
-
 
 BestSol.Position
 
-plot(log(BestCost1),'b','LineWidth',2); hold on
-save("CSBO_TSO_result.mat", "BestCost1")
+% 创建图形窗口并绘制TSO算法的收敛曲线
+figure = gcf;  % 获取当前图形窗口
+plot(BestCost1, 'Color', '#b28d90', 'LineWidth', 2);  % 绘制正常曲线
+xlabel('迭代');  % x轴标签
+ylabel('到目前为止获得的最佳分数');  % y轴标签
+box on;  % 显示坐标轴框线
+% 设置图形窗口中的所有对象字体为 Times New Roman
+set(findall(figure, '-property', 'FontName'), 'FontName', 'Times New Roman');
+legend('CSBO_TSO');  % 图例

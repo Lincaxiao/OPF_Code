@@ -5,7 +5,7 @@ close all;  % 关闭所有图形窗口
 % 定义要测试的目标函数编号
 Fun_name = 'Fun_case118';  % 测试函数编号
 % 定义金枪鱼群算法的种群大小
-SearchAgents = 100;
+SearchAgents = 150;
 % 定义最大迭代次数
 Max_iterations = 200;
 % 获取目标函数的下界、上界、维度和适应度函数
@@ -83,15 +83,3 @@ box on;  % 显示坐标轴框线
 % 设置图形窗口中的所有对象字体为 Times New Roman
 set(findall(figure, '-property', 'FontName'), 'FontName', 'Times New Roman');
 legend('TSO');  % 图例
-% 保存TSO_curve的数据
-tmp = TSO_curve;
-if exist('TSO_curve.mat', 'file') == 2 % 如果文件存在
-    load('TSO_curve.mat'); % 加载文件
-    % 将最终数据更小的那个保留
-    if TSO_curve(end) > tmp(end)
-        TSO_curve = tmp;
-    end
-else
-    TSO_curve = tmp;
-end
-save('TSO_curve_case118_Ploss.mat', 'TSO_curve');
