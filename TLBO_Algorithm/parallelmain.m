@@ -1,6 +1,6 @@
-Max_loop_number = 18;
-Max_iterations = 200;
-Search_agents = 200;
+Max_loop_number = 6;
+Max_iterations = 300;
+Search_agents = 300;
 Fun_name = 'Fun_ieee30';
 
 Global_Best_Score = inf;
